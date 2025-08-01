@@ -80,7 +80,7 @@ const MapboxMap: React.FC = () => {
         }
         setLoadingAddr(false);
       },
-      (err) => {
+      () => {
         alert("Could not get your location.");
         setLoadingAddr(false);
       }
