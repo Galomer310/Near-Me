@@ -285,6 +285,7 @@ const GoogleMapSearch: React.FC = () => {
     >
       {/* Overlay Controls */}
       <form
+        className="overlay-controls"
         onSubmit={handleSearch}
         style={{
           position: "absolute",

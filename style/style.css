@@ -1,0 +1,38 @@
+.overlay-controls {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  background: rgba(255,255,255,0.93);
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.09);
+  align-items: center;
+  min-width: 300px;
+  max-width: 90vw;
+}
+
+/* On mobile, stack vertically */
+@media (max-width: 700px) {
+  .overlay-controls {
+    flex-direction: column;
+    top: 8px;
+    left: 0;
+    transform: none;
+    width: 98vw;
+    min-width: unset;
+    max-width: 98vw;
+    margin: 0 1vw;
+    padding: 4px;
+  }
+  .overlay-controls input,
+  .overlay-controls select,
+  .overlay-controls button {
+    width: 100%;
+    font-size: 1.1rem;
+  }
+}
