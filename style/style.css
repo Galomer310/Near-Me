@@ -14,25 +14,116 @@
   align-items: center;
   min-width: 300px;
   max-width: 90vw;
+  transition: left 0.25s, top 0.25s, flex-direction 0.25s, width 0.25s;
+}
+.overlay-controls input,
+.overlay-controls select,
+.overlay-controls button {
+  font-size: 1rem;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+.overlay-controls button[type="submit"] {
+  background: #4285F4;
+  color: white;
+  border: none;
+  font-weight: bold;
+}
+.overlay-controls button[type="button"] {
+  background: #34A853;
+  color: white;
+  border: none;
+  font-weight: bold;
+}
+.radius-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.burger-btn {
+  display: none;
 }
 
-/* On mobile, stack vertically */
+/* Business navigation bar */
+.business-nav-bar {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255,255,255,0.93);
+  border-radius: 8px;
+  padding: 8px 16px;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07);
+  min-width: 250px;
+  max-width: 90vw;
+}
+
+.business-nav-bar button {
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: #333;
+  cursor: pointer;
+  min-width: 32px;
+}
+.business-nav-bar button:disabled {
+  color: #ccc;
+  cursor: default;
+}
+
+/* MOBILE SIDEBAR STYLE! */
 @media (max-width: 700px) {
-  .overlay-controls {
-    flex-direction: column;
-    top: 8px;
-    left: 0;
-    transform: none;
-    width: 98vw;
-    min-width: unset;
-    max-width: 98vw;
-    margin: 0 1vw;
-    padding: 4px;
+  .burger-btn {
+    display: block;
+    position: absolute;
+    top: 16px;
+    left: 14px;
+    z-index: 20;
+    background: none;
+    border: none;
+    font-size: 32px;
+    cursor: pointer;
+    color: #333;
+    width: 48px;
+    height: 48px;
   }
-  .overlay-controls input,
-  .overlay-controls select,
-  .overlay-controls button {
-    width: 100%;
-    font-size: 1.1rem;
+  .overlay-controls {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: none;
+    flex-direction: column;
+    border-radius: 0 12px 12px 0;
+    min-width: 70vw;
+    max-width: 80vw;
+    width: 76vw;
+    padding: 14px 8px 14px 10px;
+    box-shadow: 2px 0 18px 0 rgba(0,0,0,0.08);
+    transition: left 0.25s, top 0.25s;
+    display: none;
+  }
+  .overlay-controls.open {
+    display: flex;
+    animation: slideIn 0.23s;
+  }
+  @keyframes slideIn {
+    from { left: -90vw; opacity: 0; }
+    to   { left: 0; opacity: 1; }
+  }
+  .business-nav-bar {
+    top: auto;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 96vw;
+    max-width: 96vw;
+    min-width: unset;
+    border-radius: 16px;
+    font-size: 0.96em;
   }
 }
