@@ -1,14 +1,13 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 
-// Supported languages (expand as needed)
+// Supported languages
 const languages = [
   { label: "English", value: "en" },
   { label: "עברית", value: "he" },
   { label: "Español", value: "es" },
   { label: "Français", value: "fr" },
   { label: "Deutsch", value: "de" },
-  // add more if you like
 ];
 
 // Simple translation dictionary
@@ -22,6 +21,9 @@ const TEXT = {
     radius: "Radius",
     meters: "meters",
     noResults: "No results found",
+    prev: "Prev",
+    next: "Next",
+    distance: "Distance",
   },
   he: {
     searchPlaceholder: "הכנס כתובת או עיר...",
@@ -32,6 +34,9 @@ const TEXT = {
     radius: "רדיוס",
     meters: "מטרים",
     noResults: "לא נמצאו תוצאות",
+    prev: "הקודם",
+    next: "הבא",
+    distance: "מרחק",
   },
   es: {
     searchPlaceholder: "Ingrese dirección o ciudad...",
@@ -42,6 +47,9 @@ const TEXT = {
     radius: "Radio",
     meters: "metros",
     noResults: "No se encontraron resultados",
+    prev: "Anterior",
+    next: "Siguiente",
+    distance: "Distancia",
   },
   fr: {
     searchPlaceholder: "Entrez une adresse ou une ville...",
@@ -52,6 +60,9 @@ const TEXT = {
     radius: "Rayon",
     meters: "mètres",
     noResults: "Aucun résultat trouvé",
+    prev: "Précédent",
+    next: "Suivant",
+    distance: "Distance",
   },
   de: {
     searchPlaceholder: "Adresse oder Stadt eingeben...",
@@ -62,6 +73,9 @@ const TEXT = {
     radius: "Radius",
     meters: "Meter",
     noResults: "Keine Ergebnisse gefunden",
+    prev: "Zurück",
+    next: "Weiter",
+    distance: "Entfernung",
   },
 };
 
@@ -122,6 +136,27 @@ const centerDefault = { lat: 32.0853, lng: 34.7818 }; // Tel Aviv default
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY as string;
 const libraries: "places"[] = ["places"];
 
+// Haversine formula for distance (in meters)
+function getDistanceFromLatLng(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+): number {
+  const toRad = (v: number) => (v * Math.PI) / 180;
+  const R = 6371e3; // meters
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 const GoogleMapSearch: React.FC = () => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: GOOGLE_API_KEY,
@@ -134,12 +169,12 @@ const GoogleMapSearch: React.FC = () => {
   const [type, setType] = useState(""); // Empty default
   const [lang, setLang] = useState(""); // Empty default
   const [radius, setRadius] = useState(3000);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const mapRef = useRef<google.maps.Map | null>(null);
 
-  // Change all text based on language (default: English)
   const t = TEXT[lang as keyof typeof TEXT] || TEXT.en;
 
-  // Handle address search
+  // Search address
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!address.trim()) return;
@@ -157,7 +192,7 @@ const GoogleMapSearch: React.FC = () => {
     });
   };
 
-  // Find Me: Use geolocation to set map center
+  // "Find Me" button
   const handleFindMe = () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -173,8 +208,8 @@ const GoogleMapSearch: React.FC = () => {
     );
   };
 
-  // Handle place search when mapCenter/type/radius changes
-  React.useEffect(() => {
+  // Fetch businesses whenever location/type/radius/lang changes
+  useEffect(() => {
     if (!isLoaded || !mapRef.current || !type) return;
 
     const service = new window.google.maps.places.PlacesService(mapRef.current);
@@ -189,15 +224,55 @@ const GoogleMapSearch: React.FC = () => {
         status === window.google.maps.places.PlacesServiceStatus.OK &&
         results
       ) {
-        setPlaces(results);
+        // Sort by distance from map center
+        const withDistance = results.map((p) => ({
+          ...p,
+          _distance: getDistanceFromLatLng(
+            mapCenter.lat,
+            mapCenter.lng,
+            p.geometry?.location?.lat?.() ?? 0,
+            p.geometry?.location?.lng?.() ?? 0
+          ),
+        }));
+        withDistance.sort((a, b) => a._distance - b._distance);
+        setPlaces(withDistance);
+        setSelectedIndex(0); // always start with nearest
       } else {
         setPlaces([]);
+        setSelectedIndex(0);
       }
     });
   }, [isLoaded, mapCenter, type, radius, lang]);
 
+  // When selectedIndex changes, pan map to business
+  useEffect(() => {
+    if (places.length > 0 && mapRef.current) {
+      const place = places[selectedIndex];
+      if (place) {
+        mapRef.current.panTo({
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+        });
+      }
+    }
+  }, [selectedIndex, places]);
+
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading Google Map…</div>;
+
+  // Get the selected business and distance
+  const selectedPlace = places[selectedIndex];
+  const distanceToSelected =
+    selectedPlace && mapCenter
+      ? Math.round(
+          getDistanceFromLatLng(
+            mapCenter.lat,
+            mapCenter.lng,
+            selectedPlace.geometry.location.lat(),
+            selectedPlace.geometry.location.lng()
+          )
+        )
+      : null;
 
   return (
     <div
@@ -340,19 +415,91 @@ const GoogleMapSearch: React.FC = () => {
         </div>
       </form>
 
+      {/* Business Navigation Bar */}
+      {places.length > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            top: 80,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 11,
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            background: "rgba(255,255,255,0.93)",
+            borderRadius: 8,
+            padding: "8px 16px",
+            boxShadow: "0 2px 12px 0 rgba(0,0,0,0.07)",
+            minWidth: 250,
+            maxWidth: "90vw",
+          }}
+        >
+          <button
+            onClick={() => setSelectedIndex((i) => Math.max(0, i - 1))}
+            disabled={selectedIndex === 0}
+            style={{
+              fontSize: 24,
+              background: "none",
+              border: "none",
+              color: selectedIndex === 0 ? "#ccc" : "#333",
+              cursor: selectedIndex === 0 ? "default" : "pointer",
+            }}
+            aria-label={t.prev}
+          >
+            {t.prev}
+          </button>
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <b>{selectedPlace?.name}</b>
+            <br />
+            {distanceToSelected !== null && (
+              <span style={{ fontSize: 13, color: "#555" }}>
+                {t.distance}: {distanceToSelected} {t.meters}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() =>
+              setSelectedIndex((i) => Math.min(places.length - 1, i + 1))
+            }
+            disabled={selectedIndex === places.length - 1}
+            style={{
+              fontSize: 24,
+              background: "none",
+              border: "none",
+              color: selectedIndex === places.length - 1 ? "#ccc" : "#333",
+              cursor:
+                selectedIndex === places.length - 1 ? "default" : "pointer",
+            }}
+            aria-label={t.next}
+          >
+            {t.next}
+          </button>
+        </div>
+      )}
+
       <GoogleMap
         mapContainerStyle={{ width: "100vw", height: "100vh" }}
-        center={mapCenter}
+        center={
+          selectedPlace
+            ? {
+                lat: selectedPlace.geometry.location.lat(),
+                lng: selectedPlace.geometry.location.lng(),
+              }
+            : mapCenter
+        }
         zoom={14}
         onLoad={(map) => {
           mapRef.current = map;
         }}
       >
+        {/* Marker for current map center or user location */}
         <Marker
           position={mapCenter}
           icon={{ url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }}
         />
-        {places.map((place) => (
+        {/* Markers for places (selected is highlighted) */}
+        {places.map((place, idx) => (
           <Marker
             key={place.place_id}
             position={{
@@ -361,7 +508,10 @@ const GoogleMapSearch: React.FC = () => {
             }}
             title={place.name}
             icon={{
-              url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+              url:
+                idx === selectedIndex
+                  ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                  : "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
             }}
           />
         ))}
