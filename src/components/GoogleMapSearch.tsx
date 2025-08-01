@@ -198,20 +198,22 @@ const GoogleMapSearch: React.FC = () => {
         <button type="button" onClick={handleFindMe}>
           {t.findMe}
         </button>
+
         <div className="radius-control">
           <label htmlFor="radius">{t.radius}:</label>
-          <input
-            type="range"
-            min={500}
-            max={15000}
-            step={500}
-            value={radius}
+          <select
             id="radius"
+            value={radius}
             onChange={(e) => setRadius(Number(e.target.value))}
-          />
-          <span>
-            {radius} {t.meters}
-          </span>
+            style={{ minWidth: 70 }}
+          >
+            <option value={500}>500 m</option>
+            <option value={1000}>1 km</option>
+            <option value={2000}>2 km</option>
+            <option value={3000}>3 km</option>
+            <option value={4000}>4 km</option>
+            <option value={5000}>5 km</option>
+          </select>
         </div>
       </form>
       {/* Business Navigation Bar */}
