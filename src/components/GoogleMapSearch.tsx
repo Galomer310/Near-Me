@@ -9,6 +9,7 @@ const centerDefault = { lat: 32.0853, lng: 34.7818 };
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY as string;
 const libraries: "places"[] = ["places"];
 
+// Haversine formula
 function getDistanceFromLatLng(
   lat1: number,
   lng1: number,
@@ -29,6 +30,16 @@ function getDistanceFromLatLng(
   return R * c;
 }
 
+// Predefined radius options (in meters)
+const radiusOptions = [
+  { value: 500, label: "500 m" },
+  { value: 1000, label: "1 km" },
+  { value: 2000, label: "2 km" },
+  { value: 3000, label: "3 km" },
+  { value: 4000, label: "4 km" },
+  { value: 5000, label: "5 km" },
+];
+
 const GoogleMapSearch: React.FC = () => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: GOOGLE_API_KEY,
@@ -45,8 +56,12 @@ const GoogleMapSearch: React.FC = () => {
   const [toolbarOpen, setToolbarOpen] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
 
+  // Dynamic translation + business types
   const t = TEXT[lang as keyof typeof TEXT] || TEXT.en;
+  const currentBusinessTypes =
+    businessTypes[lang as keyof typeof businessTypes] || businessTypes.en;
 
+  // Responsive: sidebar open on desktop, closed on mobile
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 700) setToolbarOpen(true);
@@ -57,6 +72,7 @@ const GoogleMapSearch: React.FC = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Search for address
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!address.trim()) return;
@@ -74,6 +90,7 @@ const GoogleMapSearch: React.FC = () => {
     });
   };
 
+  // Find me: get geolocation
   const handleFindMe = () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -89,6 +106,7 @@ const GoogleMapSearch: React.FC = () => {
     );
   };
 
+  // Fetch places when map/type/radius/lang changes
   useEffect(() => {
     if (!isLoaded || !mapRef.current || !type) return;
     const service = new window.google.maps.places.PlacesService(mapRef.current);
@@ -105,12 +123,18 @@ const GoogleMapSearch: React.FC = () => {
       ) {
         const withDistance = results.map((p) => ({
           ...p,
-          _distance: getDistanceFromLatLng(
-            mapCenter.lat,
-            mapCenter.lng,
-            p.geometry?.location?.lat?.() ?? 0,
-            p.geometry?.location?.lng?.() ?? 0
-          ),
+          _distance:
+            p.geometry &&
+            p.geometry.location &&
+            typeof p.geometry.location.lat === "function" &&
+            typeof p.geometry.location.lng === "function"
+              ? getDistanceFromLatLng(
+                  mapCenter.lat,
+                  mapCenter.lng,
+                  p.geometry.location.lat(),
+                  p.geometry.location.lng()
+                )
+              : Infinity,
         }));
         withDistance.sort((a, b) => a._distance - b._distance);
         setPlaces(withDistance);
@@ -122,6 +146,7 @@ const GoogleMapSearch: React.FC = () => {
     });
   }, [isLoaded, mapCenter, type, radius, lang]);
 
+  // Pan to selected business on navigation
   useEffect(() => {
     if (places.length > 0 && mapRef.current) {
       const place = places[selectedIndex];
@@ -150,6 +175,9 @@ const GoogleMapSearch: React.FC = () => {
         )
       : null;
 
+  // RTL for languages like Arabic/Hebrew
+  const isRTL = ["ar", "he"].includes(lang);
+
   return (
     <div
       style={{
@@ -157,6 +185,7 @@ const GoogleMapSearch: React.FC = () => {
         height: "100vh",
         position: "relative",
         overflow: "hidden",
+        direction: isRTL ? "rtl" : "ltr",
       }}
     >
       {/* Burger button for small screens */}
@@ -164,6 +193,7 @@ const GoogleMapSearch: React.FC = () => {
         className="burger-btn"
         aria-label={toolbarOpen ? t.close : "Show controls"}
         onClick={() => setToolbarOpen((v) => !v)}
+        style={isRTL ? { right: "14px", left: "unset" } : {}}
       >
         {toolbarOpen ? "✖" : "☰"}
       </button>
@@ -171,6 +201,11 @@ const GoogleMapSearch: React.FC = () => {
       <form
         className={`overlay-controls${toolbarOpen ? " open" : ""}`}
         onSubmit={handleSearch}
+        style={
+          isRTL
+            ? { right: 0, left: "unset", borderRadius: "12px 0 0 12px" }
+            : {}
+        }
       >
         <input
           type="text"
@@ -188,7 +223,7 @@ const GoogleMapSearch: React.FC = () => {
         </select>
         <select value={type} onChange={(e) => setType(e.target.value)}>
           <option value="">{t.selectType}</option>
-          {businessTypes.map((b) => (
+          {currentBusinessTypes.map((b) => (
             <option key={b.value} value={b.value}>
               {b.label}
             </option>
@@ -198,7 +233,6 @@ const GoogleMapSearch: React.FC = () => {
         <button type="button" onClick={handleFindMe}>
           {t.findMe}
         </button>
-
         <div className="radius-control">
           <label htmlFor="radius">{t.radius}:</label>
           <select
@@ -207,18 +241,24 @@ const GoogleMapSearch: React.FC = () => {
             onChange={(e) => setRadius(Number(e.target.value))}
             style={{ minWidth: 70 }}
           >
-            <option value={500}>500 m</option>
-            <option value={1000}>1 km</option>
-            <option value={2000}>2 km</option>
-            <option value={3000}>3 km</option>
-            <option value={4000}>4 km</option>
-            <option value={5000}>5 km</option>
+            {radiusOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
           </select>
         </div>
       </form>
       {/* Business Navigation Bar */}
       {places.length > 0 && (
-        <div className="business-nav-bar">
+        <div
+          className="business-nav-bar"
+          style={
+            isRTL
+              ? { right: "50%", left: "unset", transform: "translateX(50%)" }
+              : {}
+          }
+        >
           <button
             onClick={() => setSelectedIndex((i) => Math.max(0, i - 1))}
             disabled={selectedIndex === 0}
