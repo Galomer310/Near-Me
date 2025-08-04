@@ -3,6 +3,7 @@ import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import { languages } from "../data/languages";
 import { TEXT } from "../data/text";
 import { businessTypes } from "../data/businessType";
+import NavigateToBusiness from "./NavigateToBusiness";
 import "../../style/style.css";
 
 const centerDefault = { lat: 32.0853, lng: 34.7818 };
@@ -51,9 +52,10 @@ const GoogleMapSearch: React.FC = () => {
   const [places, setPlaces] = useState<any[]>([]);
   const [type, setType] = useState("");
   const [lang, setLang] = useState("");
-  const [radius, setRadius] = useState(3000);
+  const [radius, setRadius] = useState(1000);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [toolbarOpen, setToolbarOpen] = useState(false);
+  const [showBusinessModal, setShowBusinessModal] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
 
   // Dynamic translation + business types
@@ -267,7 +269,18 @@ const GoogleMapSearch: React.FC = () => {
             {t.prev}
           </button>
           <div>
-            <b>{selectedPlace?.name}</b>
+            <b
+              className="business-link"
+              style={{
+                cursor: "pointer",
+                textDecoration: "underline",
+                color: "#1a0dab",
+              }}
+              onClick={() => setShowBusinessModal(true)}
+            >
+              {selectedPlace?.name}
+            </b>
+
             <br />
             {distanceToSelected !== null && (
               <span>
@@ -285,6 +298,20 @@ const GoogleMapSearch: React.FC = () => {
             {t.next}
           </button>
         </div>
+      )}
+
+      {showBusinessModal && selectedPlace && (
+        <NavigateToBusiness
+          open={showBusinessModal}
+          onClose={() => setShowBusinessModal(false)}
+          businessName={selectedPlace?.name || ""}
+          businessUrl={selectedPlace?.website || selectedPlace?.url}
+          text={{
+            to: t.to,
+            close: t.close,
+            navigateToBusiness: t.navigateToBusiness,
+          }}
+        />
       )}
       <GoogleMap
         mapContainerStyle={{ width: "100vw", height: "100vh" }}

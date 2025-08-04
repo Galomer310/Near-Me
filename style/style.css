@@ -127,3 +127,41 @@
     font-size: 0.96em;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+.business-modal-overlay {
+  position: fixed;
+  z-index: 10000;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.business-modal-content {
+  background: white;
+  padding: 30px 24px;
+  border-radius: 12px;
+  min-width: 240px;
+  max-width: 92vw;
+  box-shadow: 0 3px 28px 0 rgba(0,0,0,0.18);
+  text-align: center;
+  animation: showUp 0.18s;
+}
+@keyframes showUp {
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.business-link:hover {
+  color: #0b5fc2;
+  text-decoration: underline;
+}

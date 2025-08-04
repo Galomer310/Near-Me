@@ -14,6 +14,7 @@ export const TEXT = {
     distance: "Distance",
     to: "to",
     close: "Close",
+    navigateToBusiness: "To navigate to the business page, please zoom in on the business location and then click the link from there."
   },
   he: {
     searchPlaceholder: "הכנס כתובת או עיר...",
@@ -29,6 +30,7 @@ export const TEXT = {
     distance: "מרחק",
     to: "עד",
     close: "סגור",
+    navigateToBusiness: "למעבר לבית העסק יש לבצע זום אין למיקום העסק ואז ללחוץ על הלינק מהתצוגה הקרובה.",
   },
   es: {
     searchPlaceholder: "Ingrese dirección o ciudad...",
@@ -44,6 +46,7 @@ export const TEXT = {
     distance: "Distancia",
     to: "a",
     close: "Cerrar",
+    navigateToBusiness: "Para navegar a la página del negocio, haz zoom en la ubicación y haz clic en el enlace desde allí.",
   },
   fr: {
     searchPlaceholder: "Entrez une adresse ou une ville...",
@@ -59,6 +62,7 @@ export const TEXT = {
     distance: "Distance",
     to: "à",
     close: "Fermer",
+    navigateToBusiness: "Pour accéder à la page de l'entreprise, effectuez un zoom avant sur l'emplacement puis cliquez sur le lien depuis là.",
   },
   de: {
     searchPlaceholder: "Adresse oder Stadt eingeben...",
@@ -74,6 +78,7 @@ export const TEXT = {
     distance: "Entfernung",
     to: "zu",
     close: "Schließen",
+     navigateToBusiness: "Um zur Unternehmensseite zu gelangen, zoomen Sie bitte auf den Standort und klicken Sie dann auf den Link.",
   },
   ar: {
     searchPlaceholder: "أدخل العنوان أو المدينة...",
@@ -89,6 +94,7 @@ export const TEXT = {
     distance: "المسافة",
     to: "إلى",
     close: "إغلاق",
+    navigateToBusiness: "للتنقل إلى صفحة النشاط التجاري، يرجى تكبير موقع النشاط ثم النقر على الرابط من هناك.",
   },
   ru: {
     searchPlaceholder: "Введите адрес или город...",
@@ -104,6 +110,7 @@ export const TEXT = {
     distance: "Расстояние",
     to: "до",
     close: "Закрыть",
+    navigateToBusiness: "Чтобы перейти на страницу компании, приблизьте местоположение бизнеса и затем нажмите на ссылку.",
   },
   zh: {
     searchPlaceholder: "输入地址或城市...",
@@ -119,6 +126,7 @@ export const TEXT = {
     distance: "距离",
     to: "到",
     close: "关闭",
+    navigateToBusiness: "如需导航到商家页面，请先放大到商家位置，然后点击那里显示的链接。",
   },
   pt: {
     searchPlaceholder: "Digite o endereço ou cidade...",
@@ -134,6 +142,7 @@ export const TEXT = {
     distance: "Distância",
     to: "para",
     close: "Fechar",
+    navigateToBusiness: "Para navegar até a página do estabelecimento, aproxime o local no mapa e depois clique no link de lá.",
   },
   it: {
     searchPlaceholder: "Inserisci indirizzo o città...",
@@ -149,6 +158,7 @@ export const TEXT = {
     distance: "Distanza",
     to: "a",
     close: "Chiudi",
+    navigateToBusiness: "Per navigare alla pagina dell’attività, esegui lo zoom sulla posizione e poi clicca sul link da lì.",
   },
   pl: {
     searchPlaceholder: "Wpisz adres lub miasto...",
@@ -164,6 +174,7 @@ export const TEXT = {
     distance: "Dystans",
     to: "do",
     close: "Zamknij",
+    navigateToBusiness: "Aby przejść do strony firmy, powiększ lokalizację, a następnie kliknij link stamtąd.",
   },
 
 };
